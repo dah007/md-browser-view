@@ -1,0 +1,84 @@
+{
+  "name": "md-browserview",
+  "displayName": "MD BrowserView",
+  "description": "Preview markdown files in an internal browser panel with GitHub-style rendering.",
+  "publisher": "dah007",
+  "author": {
+    "name": "Demian Holmberg",
+    "email": "dah007@duck.com",
+    "url": "https://dah007.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dah007/md-browser-view"
+  },
+  "version": "0.5.1",
+  "icon": "images/icon.png",
+  "keywords": [
+    "markdown",
+    "preview",
+    "browser",
+    "webview"
+  ],
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:md-browserview.openInBrowser"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "md-browserview.openInBrowser",
+        "title": "View in Internal Browser"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "md-browserview.openInBrowser",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "md-browserview.openInBrowser",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "md-browserview.openInBrowser",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "github-markdown-css": "^5.5.1",
+    "highlight.js": "^11.10.0",
+    "marked": "^9.1.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.4.0"
+  }
+}
