@@ -100,14 +100,17 @@ export function renderMarkdown(
       background-color: var(--color-canvas-default, #ffffff);
     }
     #nav-bar {
-      position: sticky;
-      top: 0;
+      position: fixed;
+      top: 10px;
+      left: 10px;
       z-index: 100;
-      padding: 6px 45px;
-      background-color: var(--color-canvas-default, #ffffff);
-      border-bottom: 1px solid var(--color-border-muted, #e1e4e8);
+      padding: 4px;
+      background-color: color-mix(in srgb, var(--color-canvas-default, #ffffff) 88%, transparent);
+      border: 1px solid var(--color-border-muted, #e1e4e8);
+      border-radius: 8px;
       display: flex;
       gap: 2px;
+      backdrop-filter: blur(4px);
     }
     #nav-bar button {
       display: inline-flex;
@@ -134,7 +137,7 @@ export function renderMarkdown(
     #content { padding: 45px; }
     @media (max-width: 767px) {
       #content { padding: 15px; }
-      #nav-bar { padding: 6px 15px; }
+      #nav-bar { top: 8px; left: 8px; }
     }
     pre code.hljs { border-radius: 6px; }
   </style>

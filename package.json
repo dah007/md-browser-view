@@ -12,7 +12,7 @@
     "type": "git",
     "url": "https://github.com/dah007/md-browser-view"
   },
-  "version": "0.5.1",
+  "version": "0.6.0",
   "icon": "images/icon.png",
   "keywords": [
     "markdown",
@@ -76,7 +76,7 @@
     "marked": "^9.1.6"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^20.19.43",
     "@types/vscode": "^1.90.0",
     "@vscode/vsce": "^3.0.0",
     "typescript": "^5.4.0"
