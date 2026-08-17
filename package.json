@@ -12,7 +12,7 @@
     "type": "git",
     "url": "https://github.com/dah007/md-browser-view"
   },
-  "version": "0.6.0",
+  "version": "0.6.1",
   "icon": "images/icon.png",
   "keywords": [
     "markdown",
@@ -28,9 +28,6 @@
     "Visualization",
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:md-browserview.openInBrowser"
-  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -39,6 +36,21 @@
         "title": "View in Internal Browser"
       }
     ],
+    "configuration": {
+      "title": "MD BrowserView",
+      "properties": {
+        "md-browserview.navigation.shortcutBack": {
+          "type": "string",
+          "default": "",
+          "description": "Optional webview shortcut for back navigation (for example: Alt+ArrowLeft, Ctrl+[). Leave empty to disable."
+        },
+        "md-browserview.navigation.shortcutForward": {
+          "type": "string",
+          "default": "",
+          "description": "Optional webview shortcut for forward navigation (for example: Alt+ArrowRight, Ctrl+]). Leave empty to disable."
+        }
+      }
+    },
     "menus": {
       "explorer/context": [
         {

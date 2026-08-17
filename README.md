@@ -1,6 +1,17 @@
 # MD BrowserView
 
-A VS Code extension that renders Markdown files in an internal browser panel with GitHub-style formatting, syntax highlighting, and cross-document navigation.
+MD BrowserView shows Markdown in a built-in browser panel instead of the usual editor preview. It’s meant to feel more like a clean reading view, with GitHub-style formatting, syntax highlighting, links between Markdown files, and external links that open in your normal browser.
+
+The idea is to make it easy to read and navigate Markdown without leaving your editor. The panel keeps the document visible, lets you move around within the extension, and adjusts to light or dark VS Code themes so it stays easy to read.
+
+## What It Does
+
+- Renders Markdown in a dedicated browser-style panel beside your editor.
+- Applies GitHub-style Markdown layout and syntax highlighting to fenced code blocks.
+- Keeps `.md` link navigation inside the same panel when possible.
+- Opens external URLs in your system browser.
+- Uses the active VS Code color theme for the reading surface.
+- Provides back and forward navigation for browsing through linked Markdown files.
 
 ## Usage
 
@@ -10,6 +21,11 @@ Right-click any `.md` file in the:
 - **Editor text area** (right-click in the editor) → "View in Internal Browser"
 
 A single panel opens beside your editor. Clicking links to other `.md` files navigates within the same panel. External URLs open in the system browser.
+
+## Known Limitations
+
+- Images in files opened outside any VS Code workspace will only resolve from the file's immediate directory. Images in sibling directories may not load.
+- The panel theme (light/dark) is set at render time. Switching the VS Code color theme while a panel is open requires reopening the panel to apply the new theme.
 
 ## Installation (local)
 
@@ -26,17 +42,6 @@ Then either:
   code --install-extension md-browserview-0.5.1.vsix
   ```
 
-## Publishing
-
-This repository is set up for Marketplace publishing with `vsce`.
-
-1. Install the VSCE CLI if needed: `npm install`
-2. Log in with your Marketplace publisher id: `npx vsce login dah007`
-3. Create a package: `npx vsce package`
-4. Publish: `npx vsce publish`
-
-If you use a different Marketplace publisher id, update `publisher` in `package.json` before publishing.
-
 ## Open Source Dependencies
 
 | Package | Version | License | Purpose |
@@ -45,7 +50,6 @@ If you use a different Marketplace publisher id, update `publisher` in `package.
 | [highlight.js](https://github.com/highlightjs/highlight.js) | ^11.10.0 | BSD-3-Clause | Syntax highlighting for fenced code blocks; auto-detects language when none is specified |
 | [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) | ^5.5.1 | MIT | GitHub's exact Markdown stylesheet, including light and dark theme variants |
 
-## Known Limitations
+## License
 
-- Images in files opened outside any VS Code workspace will only resolve from the file's immediate directory. Images in sibling directories may not load.
-- The panel theme (light/dark) is set at render time. Switching the VS Code color theme while a panel is open requires reopening the panel to apply the new theme.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full text.
