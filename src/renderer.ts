@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -65,7 +67,9 @@ export function renderMarkdown(
     fileUri: vscode.Uri,
     webview: vscode.Webview,
     canGoBack: boolean,
-    canGoForward: boolean
+    canGoForward: boolean,
+    backShortcut: string,
+    forwardShortcut: string
 ): string {
     const isDark =
         vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark ||
@@ -81,6 +85,10 @@ export function renderMarkdown(
     const cspSource = webview.cspSource;
     const backDisabled = canGoBack ? '' : ' disabled';
     const forwardDisabled = canGoForward ? '' : ' disabled';
+    const backShortcutJson = JSON.stringify(backShortcut);
+    const forwardShortcutJson = JSON.stringify(forwardShortcut);
+    const backTooltip = backShortcut ? `Back (${backShortcut})` : 'Back';
+    const forwardTooltip = forwardShortcut ? `Forward (${forwardShortcut})` : 'Forward';
 
     return `<!DOCTYPE html>
 <html lang="en" data-color-mode="${colorMode}">
@@ -91,67 +99,184 @@ export function renderMarkdown(
   <style>${githubMarkdownCss}</style>
   <style>${hljsCss}</style>
   <style>
-    html { background-color: var(--color-canvas-default, #ffffff); }
+    html[data-color-mode="light"] {
+      --mdbv-bg: #ffffff;
+      --mdbv-fg: #000000;
+    }
+    html[data-color-mode="dark"] {
+      --mdbv-bg: rgb(21, 27, 35);
+      --mdbv-fg: #ffffff;
+    }
+    html {
+      background-color: var(--mdbv-bg);
+      color: var(--mdbv-fg);
+      height: 100%;
+    }
     body {
       box-sizing: border-box;
-      min-width: 200px;
-      max-width: 980px;
-      margin: 0 auto;
-      background-color: var(--color-canvas-default, #ffffff);
+      min-width: 0;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background-color: var(--mdbv-bg);
+      color: var(--mdbv-fg);
+    }
+    .markdown-body {
+      color: var(--mdbv-fg);
     }
     #nav-bar {
       position: fixed;
       top: 10px;
       left: 10px;
-      z-index: 100;
-      padding: 4px;
-      background-color: color-mix(in srgb, var(--color-canvas-default, #ffffff) 88%, transparent);
-      border: 1px solid var(--color-border-muted, #e1e4e8);
-      border-radius: 8px;
+      z-index: 9999;
+      padding: 3px;
+      background-color: color-mix(in srgb, var(--mdbv-bg) 76%, var(--mdbv-fg) 24%);
+      border: 1px solid color-mix(in srgb, var(--mdbv-fg) 10%, var(--mdbv-bg));
+      border-radius: 999px;
       display: flex;
-      gap: 2px;
+      gap: 3px;
       backdrop-filter: blur(4px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     }
     #nav-bar button {
+      position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 26px;
-      height: 26px;
-      border: none;
-      border-radius: 4px;
-      background: transparent;
-      color: var(--color-fg-default, #24292f);
+      width: 21px;
+      height: 21px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background-color: color-mix(in srgb, var(--mdbv-fg) 9%, var(--mdbv-bg));
+      color: var(--mdbv-fg);
       cursor: pointer;
-      font-size: 14px;
+      font-size: 11px;
       line-height: 1;
       padding: 0;
+      opacity: 0.88;
+      transition: opacity 120ms ease;
+    }
+    #nav-bar button[data-tip]::after {
+      content: attr(data-tip);
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 120ms ease;
+      font-size: 10px;
+      line-height: 1.2;
+      white-space: nowrap;
+      color: var(--color-fg-on-emphasis, #ffffff);
+      background-color: color-mix(in srgb, var(--color-canvas-inset, #24292f) 92%, transparent);
+      border: 1px solid var(--color-border-default, rgba(240,246,252,0.12));
+      border-radius: 4px;
+      padding: 2px 5px;
+      z-index: 10000;
+    }
+    #nav-bar button:hover[data-tip]::after,
+    #nav-bar button:focus-visible[data-tip]::after {
+      opacity: 1;
     }
     #nav-bar button:hover:not(:disabled) {
-      background-color: var(--color-neutral-muted, rgba(175,184,193,0.2));
+      opacity: 1;
+      background-color: color-mix(in srgb, var(--mdbv-fg) 14%, var(--mdbv-bg));
+    }
+    #nav-bar button:focus-visible {
+      opacity: 1;
     }
     #nav-bar button:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: default;
     }
-    #content { padding: 45px; }
+    #content.markdown-body {
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: none;
+      width: 100%;
+      margin: 0;
+      padding: 8px 5px 5px;
+      background-color: var(--mdbv-bg);
+      color: var(--mdbv-fg);
+    }
+    #content.markdown-body pre,
+    #content.markdown-body pre code.hljs {
+      background-color: color-mix(in srgb, var(--mdbv-bg) 72%, var(--mdbv-fg) 28%);
+      color: var(--mdbv-fg);
+    }
+    #content.markdown-body blockquote {
+      background-color: color-mix(in srgb, var(--mdbv-bg) 80%, var(--mdbv-fg) 20%);
+      color: var(--mdbv-fg);
+      border-left-color: color-mix(in srgb, var(--mdbv-fg) 35%, var(--mdbv-bg));
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    #content.markdown-body table {
+      background-color: color-mix(in srgb, var(--mdbv-bg) 84%, var(--mdbv-fg) 16%);
+    }
+    #content.markdown-body th,
+    #content.markdown-body td {
+      background-color: transparent;
+      color: var(--mdbv-fg);
+      border-color: color-mix(in srgb, var(--mdbv-fg) 18%, var(--mdbv-bg));
+    }
+    #content.markdown-body pre {
+      padding: 10px;
+    }
+    #content.markdown-body pre code.hljs {
+      display: block;
+      padding: 0;
+    }
     @media (max-width: 767px) {
-      #content { padding: 15px; }
       #nav-bar { top: 8px; left: 8px; }
+      #nav-bar button {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+      }
     }
     pre code.hljs { border-radius: 6px; }
   </style>
 </head>
 <body>
 <div id="nav-bar">
-  <button id="btn-back"${backDisabled} title="Go back" aria-label="Go back">&#8592;</button>
-  <button id="btn-forward"${forwardDisabled} title="Go forward" aria-label="Go forward">&#8594;</button>
+  <button id="btn-back"${backDisabled} title="${escapeAttr(backTooltip)}" data-tip="${escapeAttr(backTooltip)}" aria-label="Go back">&#8592;</button>
+  <button id="btn-forward"${forwardDisabled} title="${escapeAttr(forwardTooltip)}" data-tip="${escapeAttr(forwardTooltip)}" aria-label="Go forward">&#8594;</button>
 </div>
 <div id="content" class="markdown-body">
 ${body}
 </div>
 <script nonce="${n}">(function () {
   const vscode = acquireVsCodeApi();
+  const shortcutBack = ${backShortcutJson};
+  const shortcutForward = ${forwardShortcutJson};
+
+  function normalizeShortcut(s) {
+    if (!s || typeof s !== 'string') { return ''; }
+    return s
+      .split('+')
+      .map(function (part) { return part.trim().toLowerCase(); })
+      .filter(Boolean)
+      .join('+');
+  }
+
+  function matchShortcut(evt, shortcut) {
+    const normalized = normalizeShortcut(shortcut);
+    if (!normalized) { return false; }
+
+    const pieces = normalized.split('+');
+    const key = pieces[pieces.length - 1];
+    const mods = new Set(pieces.slice(0, -1));
+
+    if (evt.ctrlKey !== mods.has('ctrl')) { return false; }
+    if (evt.metaKey !== mods.has('meta')) { return false; }
+    if (evt.shiftKey !== mods.has('shift')) { return false; }
+    if (evt.altKey !== mods.has('alt')) { return false; }
+
+    return evt.key.toLowerCase() === key;
+  }
 
   window.addEventListener('message', function (e) {
     var msg = e.data;
@@ -167,6 +292,18 @@ ${body}
 
   document.getElementById('btn-forward').addEventListener('click', function () {
     vscode.postMessage({ type: 'navigateForward' });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (matchShortcut(e, shortcutBack)) {
+      e.preventDefault();
+      vscode.postMessage({ type: 'navigateBack' });
+      return;
+    }
+    if (matchShortcut(e, shortcutForward)) {
+      e.preventDefault();
+      vscode.postMessage({ type: 'navigateForward' });
+    }
   });
 
   document.addEventListener('click', function (e) {

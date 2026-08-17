@@ -102,7 +102,18 @@ export class PanelManager {
         const markdown = fs.readFileSync(fileUri.fsPath, 'utf8');
         const canGoBack = this.historyIndex > 0;
         const canGoForward = this.historyIndex < this.history.length - 1;
-        return renderMarkdown(markdown, fileUri, this.panel!.webview, canGoBack, canGoForward);
+        const navConfig = vscode.workspace.getConfiguration('md-browserview.navigation');
+        const backShortcut = navConfig.get<string>('shortcutBack', '').trim();
+        const forwardShortcut = navConfig.get<string>('shortcutForward', '').trim();
+        return renderMarkdown(
+            markdown,
+            fileUri,
+            this.panel!.webview,
+            canGoBack,
+            canGoForward,
+            backShortcut,
+            forwardShortcut
+        );
     }
 
     private buildResourceRoots(fileUri: vscode.Uri): vscode.Uri[] {
